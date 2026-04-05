@@ -19,6 +19,8 @@ body {
 
 h1 { font-size: 1.8rem; color: #fff; margin-bottom: 0.25rem; }
 .subtitle { color: #888; margin-bottom: 1.5rem; }
+.repo-link { color: #666; text-decoration: none; }
+.repo-link:hover { color: #aaa; text-decoration: underline; }
 
 /* ── Controls bar ──────────────────────────────────────────────────── */
 
