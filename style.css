@@ -1,0 +1,494 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+h1 { font-size: 1.8rem; color: #fff; margin-bottom: 0.25rem; }
+.subtitle { color: #888; margin-bottom: 1.5rem; }
+
+/* ── Controls bar ──────────────────────────────────────────────────── */
+
+.controls {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.control-group label {
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+input[type="number"] {
+  width: 90px;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #0f0f23;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+input[type="file"] { font-size: 0.9rem; color: #ccc; }
+
+input[type="range"] {
+  width: 160px;
+  accent-color: #3578d1;
+}
+
+select {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #333;
+  border-radius: 6px;
+  background: #0f0f23;
+  color: #fff;
+  font-size: 0.95rem;
+  min-width: 180px;
+}
+
+.algo-desc {
+  font-size: 0.78rem;
+  color: #777;
+  max-width: 300px;
+  margin-top: 0.2rem;
+}
+
+button {
+  padding: 0.5rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  background: #0f3460;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  align-self: flex-end;
+}
+
+button:hover:not(:disabled) { background: #1a5276; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Preview panels ────────────────────────────────────────────────── */
+
+.top-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.preview-panel {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.preview-panel h2 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: #ccc;
+}
+
+.canvas-wrap {
+  background: repeating-conic-gradient(#2a2a3e 0% 25%, #1e1e32 0% 50%) 0 0 / 20px 20px;
+  border-radius: 8px;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 0.75rem;
+}
+
+canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.zoom-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.zoom-btn {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+  min-width: 0;
+  align-self: auto;
+}
+
+.zoom-fit { margin-left: 0.3rem; font-size: 0.78rem; }
+
+.zoom-label {
+  font-size: 0.85rem;
+  color: #aaa;
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.dimensions {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+.download-btn {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.35rem 1rem;
+  background: #0f3460;
+  color: #fff;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.download-btn:hover { background: #1a5276; }
+
+/* ── Color Transform Section ───────────────────────────────────────── */
+
+.color-section {
+  margin-top: 0.5rem;
+}
+
+.color-section > h2 {
+  font-size: 1.2rem;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.cluster-controls {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.cluster-count {
+  font-size: 0.85rem;
+  color: #aaa;
+  align-self: flex-end;
+  padding-bottom: 0.35rem;
+}
+
+.cluster-warning {
+  width: 100%;
+  font-size: 0.75rem;
+  color: #886;
+  margin-top: 0.1rem;
+}
+
+.mapping-hint {
+  font-size: 0.72rem;
+  color: #667;
+  margin-bottom: 0.5rem;
+}
+
+/* Bottom 3-column layout */
+
+.bottom-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(240px, 300px) 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+/* ── Mapping Panel ─────────────────────────────────────────────────── */
+
+.mapping-panel {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 1rem;
+  max-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mapping-panel h3 {
+  font-size: 0.9rem;
+  color: #ccc;
+  margin-bottom: 0.4rem;
+}
+
+.cluster-list {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cluster-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 0.82rem;
+  border: 2px solid transparent;
+}
+
+.cluster-item:hover {
+  background: #1e2d50;
+}
+
+.cluster-item.highlight {
+  border-color: #3578d1;
+  background: #1a2e55;
+}
+
+.cluster-swatch, .bead-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.15);
+  flex-shrink: 0;
+}
+
+.cluster-arrow {
+  color: #555;
+  font-size: 0.8rem;
+}
+
+.bead-tag {
+  color: #aaa;
+  font-size: 0.78rem;
+  min-width: 28px;
+}
+
+.cluster-px {
+  color: #555;
+  font-size: 0.72rem;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* ── Bead Picker Popover ───────────────────────────────────────────── */
+
+.bead-picker {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #12192e;
+  border: 1px solid #333;
+  border-radius: 14px;
+  padding: 1.25rem;
+  z-index: 1000;
+  max-width: 520px;
+  width: 92vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.picker-compare {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.picker-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+#picker-tag {
+  color: #aaa;
+  font-size: 0.85rem;
+}
+
+#picker-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  align-self: auto;
+}
+
+#picker-close:hover { color: #fff; }
+
+.picker-group-label {
+  font-size: 0.72rem;
+  color: #666;
+  padding: 6px 2px 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.picker-cell {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.1s, transform 0.1s;
+  position: relative;
+}
+
+.picker-cell:hover {
+  border-color: #fff;
+  transform: scale(1.15);
+  z-index: 1;
+}
+
+.picker-cell.selected {
+  border-color: #3578d1;
+  box-shadow: 0 0 0 1px #3578d1;
+}
+
+/* Backdrop */
+.picker-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 999;
+}
+
+/* ── Instructions ─────────────────────────────────────────────────── */
+
+.instructions {
+  background: #16213e;
+  border-radius: 12px;
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.88rem;
+  color: #aaa;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.instructions strong { color: #ccc; }
+
+/* ── Assembly Instruction Section ─────────────────────────────────── */
+
+.instruction-section {
+  margin-top: 1.5rem;
+}
+
+.instruction-section > h2 {
+  font-size: 1.2rem;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+#instruction-output {
+  margin-top: 1rem;
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+#instruction-canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  image-rendering: auto;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────── */
+
+@media (max-width: 960px) {
+  .bottom-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .mapping-panel {
+    grid-column: 1 / -1;
+    order: -1;
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 700px) {
+  .app { padding: 1rem 0.5rem; }
+
+  .top-row, .bottom-row {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls .control-group {
+    width: 100%;
+  }
+
+  .controls select { min-width: 0; width: 100%; }
+
+  input[type="range"] { width: 100%; }
+
+  .mapping-panel {
+    grid-column: auto;
+    order: 0;
+    max-height: 260px;
+  }
+
+  .canvas-wrap { min-height: 120px; }
+
+  .bead-picker {
+    width: 96vw;
+    max-height: 85vh;
+    padding: 1rem;
+  }
+
+  .picker-cell {
+    width: 32px;
+    height: 32px;
+  }
+}

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pixel Bead Helper</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <h1>Pixel Bead Helper</h1>
+    <p class="subtitle">Downscale pixel art and map to fuse bead colors</p>
+
+    <!-- ── Step instructions ───────────────────────────────────────── -->
+    <div class="instructions">
+      <p><strong>Step 1:</strong> Upload an image.</p>
+      <p><strong>Step 2:</strong> Shrink it to bead dimensions, or skip shrinking if your image is already the right size.</p>
+      <p><strong>Step 3:</strong> Adjust color clustering and bead mapping.</p>
+      <p><strong>Step 4:</strong> Generate assembly instructions.</p>
+    </div>
+
+    <!-- ── Upload + mode controls ──────────────────────────────────── -->
+    <div class="controls">
+      <div class="control-group">
+        <label for="file-input">Upload Image</label>
+        <input type="file" id="file-input" accept="image/*">
+      </div>
+      <div class="control-group">
+        <label><input type="checkbox" id="skip-shrink"> Skip shrinking (use image as-is)</label>
+      </div>
+    </div>
+
+    <!-- ── Shrink controls ─────────────────────────────────────────── -->
+    <div class="controls" id="shrink-controls">
+      <div class="control-group">
+        <label for="target-width">Target Width (px)</label>
+        <input type="number" id="target-width" min="1" max="512" value="32">
+      </div>
+      <div class="control-group">
+        <label for="target-height">Target Height (px)</label>
+        <input type="number" id="target-height" min="1" max="512" value="32">
+      </div>
+      <div class="control-group">
+        <label><input type="checkbox" id="lock-aspect" checked> Lock aspect ratio</label>
+      </div>
+      <div class="control-group">
+        <label><input type="checkbox" id="vectorize-check"> Vectorize pre-process</label>
+      </div>
+      <div class="control-group">
+        <label for="algorithm">Rasterization</label>
+        <select id="algorithm">
+          <option value="nearest">Nearest Neighbor</option>
+          <option value="box">Box Sampling (Average)</option>
+          <option value="mode">Mode (Majority Color)</option>
+          <option value="adaptive" selected>Edge-Aware Adaptive</option>
+        </select>
+        <p class="algo-desc" id="algo-desc"></p>
+      </div>
+      <button id="process-btn" disabled>Process</button>
+    </div>
+
+    <!-- ── Top row: Original + Shrunk ──────────────────────────────── -->
+    <div class="previews top-row">
+      <div class="preview-panel">
+        <h2>Original</h2>
+        <div class="zoom-bar">
+          <button class="zoom-btn" data-target="original" data-dir="-">-</button>
+          <span class="zoom-label" id="original-zoom">1x</span>
+          <button class="zoom-btn" data-target="original" data-dir="+">+</button>
+          <button class="zoom-btn zoom-fit" data-target="original" data-dir="fit">Fit</button>
+        </div>
+        <div class="canvas-wrap" id="original-wrap">
+          <canvas id="original-canvas"></canvas>
+        </div>
+        <p class="dimensions" id="original-dims"></p>
+      </div>
+      <div class="preview-panel">
+        <h2>Shrunk</h2>
+        <div class="zoom-bar">
+          <button class="zoom-btn" data-target="result" data-dir="-">-</button>
+          <span class="zoom-label" id="result-zoom">1x</span>
+          <button class="zoom-btn" data-target="result" data-dir="+">+</button>
+          <button class="zoom-btn zoom-fit" data-target="result" data-dir="fit">Fit</button>
+        </div>
+        <div class="canvas-wrap" id="result-wrap">
+          <canvas id="result-canvas"></canvas>
+        </div>
+        <p class="dimensions" id="result-dims"></p>
+        <a id="download-link" class="download-btn" style="display:none">Download Shrunk</a>
+      </div>
+    </div>
+
+    <!-- ── Color Transform Section ─────────────────────────────────── -->
+    <div id="color-section" class="color-section" style="display:none">
+      <h2>Color Transformation</h2>
+
+      <div class="cluster-controls">
+        <div class="control-group">
+          <label for="cluster-metric">Clustering Metric</label>
+          <select id="cluster-metric">
+            <option value="rgb">RGB Euclidean</option>
+            <option value="perceptual" selected>Perceptual (weighted RGB)</option>
+            <option value="hue">Hue Difference</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="cluster-threshold">Threshold: <span id="threshold-val">50</span></label>
+          <input type="range" id="cluster-threshold" min="0" max="350" value="50">
+        </div>
+        <div class="control-group">
+          <label for="mapping-metric">Bead Mapping Metric</label>
+          <select id="mapping-metric">
+            <option value="rgb">RGB Euclidean</option>
+            <option value="perceptual" selected>Perceptual (weighted RGB)</option>
+            <option value="hue">Hue Difference</option>
+          </select>
+        </div>
+        <span class="cluster-count" id="cluster-count"></span>
+        <p class="cluster-warning">Changing clustering metric or threshold re-clusters and resets manual color mappings.</p>
+      </div>
+
+      <!-- Bottom row: Clustered | Mapping | Mapped -->
+      <div class="bottom-row">
+        <div class="preview-panel">
+          <h2>Clustered</h2>
+          <div class="zoom-bar">
+            <button class="zoom-btn" data-target="clustered" data-dir="-">-</button>
+            <span class="zoom-label" id="clustered-zoom">1x</span>
+            <button class="zoom-btn" data-target="clustered" data-dir="+">+</button>
+            <button class="zoom-btn zoom-fit" data-target="clustered" data-dir="fit">Fit</button>
+          </div>
+          <div class="canvas-wrap" id="clustered-wrap">
+            <canvas id="clustered-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="mapping-panel" id="mapping-panel">
+          <h3>Cluster &rarr; Bead Mapping</h3>
+          <p class="mapping-hint">Click a row to change its bead color.</p>
+          <div class="cluster-list" id="cluster-list"></div>
+        </div>
+
+        <div class="preview-panel">
+          <h2>Bead Output</h2>
+          <div class="zoom-bar">
+            <button class="zoom-btn" data-target="mapped" data-dir="-">-</button>
+            <span class="zoom-label" id="mapped-zoom">1x</span>
+            <button class="zoom-btn" data-target="mapped" data-dir="+">+</button>
+            <button class="zoom-btn zoom-fit" data-target="mapped" data-dir="fit">Fit</button>
+          </div>
+          <div class="canvas-wrap" id="mapped-wrap">
+            <canvas id="mapped-canvas"></canvas>
+          </div>
+          <p class="mapping-hint">Hover (or tap) a pixel to highlight its cluster mapping.</p>
+          <a id="download-mapped" class="download-btn" style="display:none">Download Bead Output</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Assembly Instructions Section ──────────────────────────── -->
+    <div id="instruction-section" class="instruction-section" style="display:none">
+      <h2>Assembly Instructions</h2>
+      <button id="generate-instructions-btn">Generate Instructions</button>
+      <div id="instruction-output" style="display:none">
+        <canvas id="instruction-canvas"></canvas>
+        <a id="download-instructions" class="download-btn" style="display:none">Download Instructions</a>
+      </div>
+    </div>
+
+    <!-- ── Bead Picker Popover ─────────────────────────────────────── -->
+    <div id="bead-picker" class="bead-picker" style="display:none">
+      <div class="picker-header">
+        <span class="picker-compare">
+          <span class="picker-swatch" id="picker-from"></span>
+          <span>&rarr;</span>
+          <span class="picker-swatch" id="picker-to"></span>
+          <span id="picker-tag"></span>
+        </span>
+        <button id="picker-close">&times;</button>
+      </div>
+      <div class="picker-grid" id="picker-grid"></div>
+    </div>
+  </div>
+
+  <script src="palette.js"></script>
+  <script src="algorithms.js"></script>
+  <script src="colortransform.js"></script>
+  <script src="instructions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
